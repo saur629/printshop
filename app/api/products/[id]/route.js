@@ -2,29 +2,55 @@ import { NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import Product from '@/models/Product'
 import mongoose from 'mongoose'
+
 export const dynamic = 'force-dynamic'
 
 export async function GET(request, { params }) {
   try {
-    await connectDB()
+    const db = await connectDB()
 
-    const { id } = params
+    // If DB not connected return error
+    if (!db) {
+      return NextResponse.json({ error: 'Database not connected' }, { status: 500 })
+    }
 
-    // Check if id is a valid MongoDB ObjectId
-    const isObjectId = mongoose.Types.ObjectId.isValid(id)
+    const { id } = await params
 
-    const product = await Product.findOne({
-      $or: [
-        ...(isObjectId ? [{ _id: id }] : []),
-        { slug: id },
-      ],
-      active: true,
-    })
+    console.log('Looking for product with id:', id)
 
-    if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    // Search by both _id and slug
+    const query = mongoose.Types.ObjectId.isValid(id)
+      ? { $or: [{ _id: new mongoose.Types.ObjectId(id) }, { slug: id }] }
+      : { slug: id }
+
+    console.log('Query:', JSON.stringify(query))
+
+    // First try WITH active filter
+    let product = await Product.findOne({ ...query, active: true })
+
+    // If not found try WITHOUT active filter
+    if (!product) {
+      console.log('Not found with active:true, trying without...')
+      product = await Product.findOne(query)
+    }
+
+    console.log('Found product:', product ? product.name : 'null')
+
+    if (!product) {
+      // List all products for debugging
+      const allProducts = await Product.find({}).select('name slug _id active')
+      console.log('All products in DB:', JSON.stringify(allProducts))
+      return NextResponse.json({
+        error: 'Product not found',
+        searchedFor: id,
+        productsInDB: allProducts,
+      }, { status: 404 })
+    }
+
     return NextResponse.json({ product })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 })
+    console.error('Product fetch error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 

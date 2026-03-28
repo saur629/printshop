@@ -9,7 +9,7 @@ import { PRODUCT_CATEGORIES, formatPrice } from '@/lib/utils'
 
 function ProductCard({ product }) {
   return (
-    <Link href={`/products/${product._id}`} className="card group hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+   <Link href={`/products/${product.slug}`} className="card group hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
       <div className="relative h-48 bg-ink-100 overflow-hidden">
         {product.thumbnailImage ? (
           <Image src={product.thumbnailImage} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
