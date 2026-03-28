@@ -4,13 +4,14 @@ import { useRouter } from 'next/navigation'
 import MainLayout from '@/components/layout/MainLayout'
 import useCartStore from '@/lib/cartStore'
 import { useSession } from 'next-auth/react'
-import { loadStripe } from '@stripe/stripe-js'
+import dynamic from 'next/dynamic'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { formatPrice } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { Lock } from 'lucide-react'
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+const stripePromise = typeof window !== 'undefined'
+  ? require('@stripe/stripe-js').loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null
 
 function CheckoutForm({ orderData, total, onSuccess }) {
   const stripe = useStripe()
