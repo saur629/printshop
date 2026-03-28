@@ -1,5 +1,6 @@
 import { Playfair_Display, DM_Sans } from 'next/font/google'
 import SessionProvider from '@/components/layout/SessionProvider'
+import MobileNav from '@/components/layout/MobileNav'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
 
@@ -31,9 +32,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
-      <body className="font-body bg-ink-50 text-ink-900 antialiased">
+      <body className="font-body bg-ink-50 text-ink-900 antialiased pb-16 md:pb-0">
         <SessionProvider>
           {children}
+          <MobileNav />
           <Toaster
             position="top-right"
             toastOptions={{

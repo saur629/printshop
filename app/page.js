@@ -20,37 +20,33 @@ export default function HomePage() {
   return (
     <MainLayout>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-ink-900 text-white">
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #f97316 0%, transparent 50%), radial-gradient(circle at 80% 20%, #ea580c 0%, transparent 40%)' }}
-        />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-brand-500/20 border border-brand-500/30 rounded-full px-4 py-1.5 text-brand-300 text-sm font-medium mb-6">
-              <Zap className="w-3.5 h-3.5" /> Same-day printing available
-            </div>
-            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-              Print That Makes an <span className="text-brand-400">Impression</span>
-            </h1>
-            <p className="text-ink-300 text-xl leading-relaxed mb-10 max-w-2xl">
-              Premium business cards, banners, flyers, and more. Upload your design, choose your options, and we'll deliver quality prints to your door.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link href="/products" className="btn-primary text-base flex items-center gap-2">
-                Shop Products <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link href="/track" className="btn-outline border-white text-white hover:bg-white hover:text-ink-900 text-base">
-                Track Your Order
-              </Link>
-            </div>
-            <div className="flex flex-wrap items-center gap-6 mt-10 text-sm text-ink-400">
-              <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-yellow-400 fill-yellow-400" /> 4.9/5 from 2,400+ reviews</span>
-              <span>✓ 48-hour standard delivery</span>
-              <span>✓ Free design templates</span>
-            </div>
-          </div>
-        </div>
-      </section>
+<section className="relative overflow-hidden bg-ink-900 text-white">
+  <div className="absolute inset-0 opacity-10"
+    style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #f97316 0%, transparent 50%), radial-gradient(circle at 80% 20%, #ea580c 0%, transparent 40%)' }}
+  />
+  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-32">
+    <div className="max-w-3xl">
+      <div className="inline-flex items-center gap-2 bg-brand-500/20 border border-brand-500/30 rounded-full px-3 py-1 text-brand-300 text-xs font-medium mb-4">
+        ⚡ Same-day printing available
+      </div>
+      <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-4">
+        Print That Makes an <span className="text-brand-400">Impression</span>
+      </h1>
+      <p className="text-ink-300 text-base md:text-xl leading-relaxed mb-8 max-w-2xl">
+        Premium business cards, banners, flyers, and more. Upload your design and we'll deliver quality prints to your door.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Link href="/products" className="btn-primary text-base flex items-center justify-center gap-2">
+          Shop Products <ArrowRight className="w-4 h-4" />
+        </Link>
+        <Link href="/track" className="btn-outline border-white text-white hover:bg-white hover:text-ink-900 text-base text-center">
+          Track Your Order
+        </Link>
+      </div>
+    </div>
+  </div>
+</section>
+
 
       {/* Features Bar */}
       <section className="bg-brand-500">
