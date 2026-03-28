@@ -21,6 +21,18 @@ export const metadata = {
   keywords: ['printing', 'business cards', 'banners', 'flyers', 'custom printing'],
 }
 
+export const metadata = {
+  title: { default: 'PrintCraft — Premium Printing Services', template: '%s | PrintCraft' },
+  description: 'High-quality custom printing services',
+  manifest: '/manifest.json',
+  themeColor: '#f97316',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'PrintCraft',
+  },
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
