@@ -22,7 +22,6 @@ export async function POST(request) {
     case 'payment_intent.succeeded': {
       const paymentIntent = event.data.object
       const orderId = paymentIntent.metadata.orderId
-
       if (orderId) {
         const order = await Order.findById(orderId)
         if (order) {

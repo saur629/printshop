@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/authOptions'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
 import Order from '@/models/Order'
@@ -15,7 +15,6 @@ export async function GET(request) {
     await connectDB()
     const users = await User.find({ role: 'customer' }).sort({ createdAt: -1 }).select('-password')
 
-    // Aggregate order stats per customer
     const stats = await Order.aggregate([
       { $group: { _id: '$user', orderCount: { $sum: 1 }, totalSpent: { $sum: '$total' } } }
     ])
