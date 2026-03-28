@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
+export const dynamic = 'force-dynamic'
 
 export async function PUT(request) {
   try {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import Product from '@/models/Product'
 import mongoose from 'mongoose'
+export const dynamic = 'force-dynamic'
 
 export async function GET(request, { params }) {
   try {

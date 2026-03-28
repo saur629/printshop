@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import connectDB from '@/lib/db'
 import Order from '@/models/Order'
+export const dynamic = 'force-dynamic'
 
 export async function GET(request, { params }) {
   try {

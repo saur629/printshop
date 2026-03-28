@@ -1,4 +1,5 @@
 import { createUploadthing } from 'uploadthing/next'
+export const dynamic = 'force-dynamic'
 
 const f = createUploadthing()
 

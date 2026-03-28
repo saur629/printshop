@@ -5,6 +5,7 @@ import connectDB from '@/lib/db'
 import Order from '@/models/Order'
 import User from '@/models/User'
 import Product from '@/models/Product'
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
