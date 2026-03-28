@@ -1,16 +1,19 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatPrice, PRODUCT_CATEGORIES } from '@/lib/utils'
-import { Plus, Pencil, Trash2, Search, Eye, EyeOff } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Upload, X, Image as ImageIcon, Loader } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useDropzone } from 'react-dropzone'
 import { AdminSidebar } from '@/app/admin/page'
 
 const EMPTY_PRODUCT = {
   name: '', description: '', shortDescription: '', category: 'business-cards',
   basePrice: '', minQuantity: 25, maxQuantity: 10000,
+  thumbnailImage: '',
+  images: [],
   featured: false, allowCustomUpload: true,
   sizeOptions: [{ label: '3.5 x 2 in', priceModifier: 0 }],
   paperOptions: [{ label: '14pt Cardstock', priceModifier: 0 }, { label: '16pt Cardstock', priceModifier: 0.01 }],
@@ -20,12 +23,145 @@ const EMPTY_PRODUCT = {
     { label: 'Rush (2-3 days)', days: 3, priceModifier: 0.02 },
   ],
   quantityTiers: [
-    { quantity: 100, price: 0.45 },
-    { quantity: 250, price: 0.35 },
-    { quantity: 500, price: 0.25 },
-    { quantity: 1000, price: 0.18 },
+    { quantity: 100, price: 350 },
+    { quantity: 250, price: 280 },
+    { quantity: 500, price: 200 },
+    { quantity: 1000, price: 150 },
   ],
   tags: [],
+}
+
+// Image Upload Component
+function ImageUploader({ value, onChange, label = 'Product Image' }) {
+  const [uploading, setUploading] = useState(false)
+  const [preview, setPreview] = useState(value || '')
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    const file = acceptedFiles[0]
+    if (!file) return
+
+    // Show local preview immediately
+    const localUrl = URL.createObjectURL(file)
+    setPreview(localUrl)
+    setUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setPreview(data.url)
+        onChange(data.url)
+        toast.success('Image uploaded!')
+      } else {
+        throw new Error('Upload failed')
+      }
+    } catch (err) {
+      toast.error('Upload failed. Try again.')
+      setPreview(value || '')
+    } finally {
+      setUploading(false)
+    }
+  }, [value, onChange])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.gif'] },
+    maxSize: 5 * 1024 * 1024,
+    maxFiles: 1,
+  })
+
+  const handleRemove = () => {
+    setPreview('')
+    onChange('')
+  }
+
+  return (
+    <div>
+      <label className="label">{label}</label>
+
+      {preview ? (
+        <div className="relative rounded-xl overflow-hidden border-2 border-ink-200 group">
+          <img
+            src={preview}
+            alt="Product"
+            className="w-full h-48 object-cover"
+          />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+            <div {...getRootProps()}>
+              <input {...getInputProps()} />
+              <button
+                type="button"
+                className="bg-white text-ink-900 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 hover:bg-ink-100"
+              >
+                <Upload className="w-4 h-4" /> Change
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 hover:bg-red-600"
+            >
+              <X className="w-4 h-4" /> Remove
+            </button>
+          </div>
+          {uploading && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <Loader className="w-8 h-8 text-white animate-spin" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+            isDragActive
+              ? 'border-brand-500 bg-brand-50'
+              : 'border-ink-300 hover:border-brand-400 hover:bg-brand-50/30'
+          }`}
+        >
+          <input {...getInputProps()} />
+          {uploading ? (
+            <div className="flex flex-col items-center gap-2">
+              <Loader className="w-8 h-8 text-brand-500 animate-spin" />
+              <p className="text-sm text-ink-600">Uploading...</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-12 h-12 bg-ink-100 rounded-full flex items-center justify-center">
+                <ImageIcon className="w-6 h-6 text-ink-400" />
+              </div>
+              <p className="text-sm font-medium text-ink-700">
+                {isDragActive ? 'Drop image here' : 'Click or drag image here'}
+              </p>
+              <p className="text-xs text-ink-400">JPG, PNG, WebP — Max 5MB</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Or paste URL */}
+      <div className="mt-2">
+        <p className="text-xs text-ink-400 mb-1">Or paste an image URL:</p>
+        <input
+          type="text"
+          className="input text-sm"
+          placeholder="https://example.com/image.jpg"
+          value={preview.startsWith('/uploads/') || preview === '' ? '' : preview}
+          onChange={(e) => {
+            setPreview(e.target.value)
+            onChange(e.target.value)
+          }}
+        />
+      </div>
+    </div>
+  )
 }
 
 function ProductModal({ product, onClose, onSave }) {
@@ -80,6 +216,18 @@ function ProductModal({ product, onClose, onSave }) {
         </div>
 
         <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+
+          {/* IMAGE UPLOAD SECTION */}
+          <section>
+            <h3 className="font-semibold text-ink-700 mb-4 text-sm uppercase tracking-wider">Product Image</h3>
+            <ImageUploader
+              value={form.thumbnailImage || ''}
+              onChange={(url) => update('thumbnailImage', url)}
+              label="Main Product Photo"
+            />
+          </section>
+
+          {/* BASIC INFO */}
           <section>
             <h3 className="font-semibold text-ink-700 mb-3 text-sm uppercase tracking-wider">Basic Info</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -94,8 +242,8 @@ function ProductModal({ product, onClose, onSave }) {
                 </select>
               </div>
               <div>
-                <label className="label">Base Price (per unit) *</label>
-                <input className="input" type="number" step="0.01" value={form.basePrice} onChange={e => update('basePrice', e.target.value)} placeholder="0.45" />
+                <label className="label">Base Price (₹ per unit) *</label>
+                <input className="input" type="number" step="1" value={form.basePrice} onChange={e => update('basePrice', e.target.value)} placeholder="350" />
               </div>
               <div>
                 <label className="label">Min Quantity</label>
@@ -126,6 +274,7 @@ function ProductModal({ product, onClose, onSave }) {
             </div>
           </section>
 
+          {/* SIZE OPTIONS */}
           <section>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wider">Size Options</h3>
@@ -134,14 +283,15 @@ function ProductModal({ product, onClose, onSave }) {
             <div className="space-y-2">
               {form.sizeOptions?.map((opt, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  <input className="input flex-1" placeholder="e.g. 3.5 x 2 in" value={opt.label} onChange={e => updateArrayItem('sizeOptions', i, 'label', e.target.value)} />
-                  <input className="input w-28" type="number" step="0.01" placeholder="+price" value={opt.priceModifier} onChange={e => updateArrayItem('sizeOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
+                  <input className="input flex-1" placeholder="e.g. A4" value={opt.label} onChange={e => updateArrayItem('sizeOptions', i, 'label', e.target.value)} />
+                  <input className="input w-28" type="number" step="1" placeholder="₹ modifier" value={opt.priceModifier} onChange={e => updateArrayItem('sizeOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
                   <button onClick={() => removeArrayItem('sizeOptions', i)} className="text-red-400 hover:text-red-600 p-2"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* PAPER OPTIONS */}
           <section>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wider">Paper Options</h3>
@@ -150,14 +300,15 @@ function ProductModal({ product, onClose, onSave }) {
             <div className="space-y-2">
               {form.paperOptions?.map((opt, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  <input className="input flex-1" placeholder="e.g. 14pt Cardstock" value={opt.label} onChange={e => updateArrayItem('paperOptions', i, 'label', e.target.value)} />
-                  <input className="input w-28" type="number" step="0.001" placeholder="+price" value={opt.priceModifier} onChange={e => updateArrayItem('paperOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
+                  <input className="input flex-1" placeholder="e.g. 130gsm Gloss" value={opt.label} onChange={e => updateArrayItem('paperOptions', i, 'label', e.target.value)} />
+                  <input className="input w-28" type="number" step="1" placeholder="₹ modifier" value={opt.priceModifier} onChange={e => updateArrayItem('paperOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
                   <button onClick={() => removeArrayItem('paperOptions', i)} className="text-red-400 hover:text-red-600 p-2"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* FINISH OPTIONS */}
           <section>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wider">Finish Options</h3>
@@ -167,13 +318,14 @@ function ProductModal({ product, onClose, onSave }) {
               {form.finishOptions?.map((opt, i) => (
                 <div key={i} className="flex gap-2 items-center">
                   <input className="input flex-1" placeholder="e.g. Matte" value={opt.label} onChange={e => updateArrayItem('finishOptions', i, 'label', e.target.value)} />
-                  <input className="input w-28" type="number" step="0.001" placeholder="+price" value={opt.priceModifier} onChange={e => updateArrayItem('finishOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
+                  <input className="input w-28" type="number" step="1" placeholder="₹ modifier" value={opt.priceModifier} onChange={e => updateArrayItem('finishOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
                   <button onClick={() => removeArrayItem('finishOptions', i)} className="text-red-400 hover:text-red-600 p-2"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* TURNAROUND OPTIONS */}
           <section>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wider">Turnaround Options</h3>
@@ -184,29 +336,30 @@ function ProductModal({ product, onClose, onSave }) {
                 <div key={i} className="flex gap-2 items-center">
                   <input className="input flex-1" placeholder="e.g. Standard (5-7 days)" value={opt.label} onChange={e => updateArrayItem('turnaroundOptions', i, 'label', e.target.value)} />
                   <input className="input w-20" type="number" placeholder="days" value={opt.days} onChange={e => updateArrayItem('turnaroundOptions', i, 'days', parseInt(e.target.value) || 7)} />
-                  <input className="input w-28" type="number" step="0.01" placeholder="+price" value={opt.priceModifier} onChange={e => updateArrayItem('turnaroundOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
+                  <input className="input w-28" type="number" step="1" placeholder="₹ modifier" value={opt.priceModifier} onChange={e => updateArrayItem('turnaroundOptions', i, 'priceModifier', parseFloat(e.target.value) || 0)} />
                   <button onClick={() => removeArrayItem('turnaroundOptions', i)} className="text-red-400 hover:text-red-600 p-2"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* QUANTITY TIERS */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wider">Quantity Price Tiers</h3>
-              <button onClick={() => addArrayItem('quantityTiers', { quantity: 100, price: 0.45 })} className="text-xs text-brand-600 font-medium">+ Add Tier</button>
+              <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wider">Quantity Price Tiers (₹)</h3>
+              <button onClick={() => addArrayItem('quantityTiers', { quantity: 100, price: 350 })} className="text-xs text-brand-600 font-medium">+ Add Tier</button>
             </div>
             <div className="space-y-2">
               {form.quantityTiers?.map((tier, i) => (
                 <div key={i} className="flex gap-2 items-center">
                   <div className="flex-1 flex gap-2">
-                    <div>
-                      <label className="text-xs text-ink-400">Qty</label>
+                    <div className="flex-1">
+                      <label className="text-xs text-ink-400">Min Qty</label>
                       <input className="input" type="number" value={tier.quantity} onChange={e => updateArrayItem('quantityTiers', i, 'quantity', parseInt(e.target.value))} />
                     </div>
-                    <div>
-                      <label className="text-xs text-ink-400">Price/unit ($)</label>
-                      <input className="input" type="number" step="0.01" value={tier.price} onChange={e => updateArrayItem('quantityTiers', i, 'price', parseFloat(e.target.value))} />
+                    <div className="flex-1">
+                      <label className="text-xs text-ink-400">Price/unit (₹)</label>
+                      <input className="input" type="number" step="1" value={tier.price} onChange={e => updateArrayItem('quantityTiers', i, 'price', parseFloat(e.target.value))} />
                     </div>
                   </div>
                   <button onClick={() => removeArrayItem('quantityTiers', i)} className="text-red-400 hover:text-red-600 p-2 mt-4"><Trash2 className="w-4 h-4" /></button>
@@ -215,13 +368,28 @@ function ProductModal({ product, onClose, onSave }) {
             </div>
           </section>
 
+          {/* TAGS */}
           <section>
             <h3 className="font-semibold text-ink-700 text-sm uppercase tracking-wider mb-3">Tags</h3>
             <div className="flex gap-2 mb-2">
-              <input className="input flex-1" value={tagInput} onChange={e => setTagInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (tagInput.trim()) { addArrayItem('tags', tagInput.trim()); setTagInput('') } } }}
-                placeholder="Type tag and press Enter" />
-              <button onClick={() => { if (tagInput.trim()) { addArrayItem('tags', tagInput.trim()); setTagInput('') } }} className="btn-outline !py-3 !px-4 text-sm">Add</button>
+              <input
+                className="input flex-1"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    if (tagInput.trim()) { addArrayItem('tags', tagInput.trim()); setTagInput('') }
+                  }
+                }}
+                placeholder="Type tag and press Enter"
+              />
+              <button
+                onClick={() => { if (tagInput.trim()) { addArrayItem('tags', tagInput.trim()); setTagInput('') } }}
+                className="btn-outline !py-3 !px-4 text-sm"
+              >
+                Add
+              </button>
             </div>
             <div className="flex flex-wrap gap-2">
               {form.tags?.map((tag, i) => (
@@ -297,7 +465,10 @@ export default function AdminProductsPage() {
       <main className="flex-1 p-8 overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="font-display text-3xl font-bold text-ink-900">Products</h1>
-          <button onClick={() => { setModalProduct(null); setShowModal(true) }} className="btn-primary flex items-center gap-2">
+          <button
+            onClick={() => { setModalProduct(null); setShowModal(true) }}
+            className="btn-primary flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" /> Add Product
           </button>
         </div>
@@ -305,7 +476,13 @@ export default function AdminProductsPage() {
         <div className="flex gap-3 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..." className="input pl-9 w-64" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="input pl-9 w-64"
+            />
           </div>
         </div>
 
@@ -325,13 +502,31 @@ export default function AdminProductsPage() {
                 {loading ? (
                   <tr><td colSpan={5} className="text-center py-12 text-ink-400">Loading...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-12 text-ink-400">No products yet. <button onClick={() => setShowModal(true)} className="text-brand-600 underline">Add your first one.</button></td></tr>
+                  <tr>
+                    <td colSpan={5} className="text-center py-12 text-ink-400">
+                      No products yet.{' '}
+                      <button onClick={() => setShowModal(true)} className="text-brand-600 underline">
+                        Add your first one.
+                      </button>
+                    </td>
+                  </tr>
                 ) : filtered.map((product) => (
                   <tr key={product._id} className="border-b border-ink-100 hover:bg-ink-50">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-ink-100 rounded-lg flex items-center justify-center text-lg">
-                          {PRODUCT_CATEGORIES.find(c => c.value === product.category)?.icon || '🖨️'}
+                        {/* Product thumbnail */}
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-ink-100 shrink-0">
+                          {product.thumbnailImage ? (
+                            <img
+                              src={product.thumbnailImage}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xl">
+                              {PRODUCT_CATEGORIES.find(c => c.value === product.category)?.icon || '🖨️'}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <p className="font-medium text-ink-900">{product.name}</p>
@@ -348,13 +543,23 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => handleToggleActive(product)} className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-500" title={product.active ? 'Deactivate' : 'Activate'}>
+                        <button
+                          onClick={() => handleToggleActive(product)}
+                          className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-500"
+                          title={product.active ? 'Deactivate' : 'Activate'}
+                        >
                           {product.active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
-                        <button onClick={() => { setModalProduct(product); setShowModal(true) }} className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-500">
+                        <button
+                          onClick={() => { setModalProduct(product); setShowModal(true) }}
+                          className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-500"
+                        >
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(product._id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
+                        <button
+                          onClick={() => handleDelete(product._id)}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-red-400"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

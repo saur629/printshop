@@ -40,7 +40,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
+  
           <div>
             <h4 className="font-semibold text-white mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
@@ -65,15 +65,15 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5 text-brand-400 shrink-0" />
-                <span>123 Print Street, Design City, DC 10001</span>
+                <span>R Digital printing</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-brand-400 shrink-0" />
-                <a href="tel:+15551234567" className="hover:text-brand-400 transition-colors">+1 (555) 123-4567</a>
+                <a href="tel:+15551234567" className="hover:text-brand-400 transition-colors">9453566950</a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-brand-400 shrink-0" />
-                <a href="mailto:hello@printcraft.com" className="hover:text-brand-400 transition-colors">hello@printcraft.com</a>
+                <a href="mailto:hello@printcraft.com" className="hover:text-brand-400 transition-colors">info@rdigitalstudio.com</a>
               </li>
             </ul>
             <div className="mt-6 p-3 bg-ink-800 rounded-lg text-xs">

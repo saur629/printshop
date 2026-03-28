@@ -60,7 +60,7 @@ const ProductSchema = new mongoose.Schema(
     ],
     allowCustomUpload: { type: Boolean, default: true },
     allowCustomSize: { type: Boolean, default: false },
-    minQuantity: { type: Number, default: 25 },
+    minQuantity: { type: Number, default: 5 },
     maxQuantity: { type: Number, default: 10000 },
     featured: { type: Boolean, default: false },
     active: { type: Boolean, default: true },

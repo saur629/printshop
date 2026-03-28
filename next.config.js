@@ -6,9 +6,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'uploadthing.com' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
-  },
-  experimental: {
-    serverActions: { allowedOrigins: ['localhost:3000'] },
+    unoptimized: true,
   },
 }
 

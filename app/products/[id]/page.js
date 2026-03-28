@@ -38,7 +38,7 @@ export default function ProductDetailPage() {
           if (data.product.paperOptions?.[0]) setSelectedPaper(data.product.paperOptions[0].label)
           if (data.product.finishOptions?.[0]) setSelectedFinish(data.product.finishOptions[0].label)
           if (data.product.turnaroundOptions?.[0]) setSelectedTurnaround(data.product.turnaroundOptions[0].label)
-          setQuantity(data.product.minQuantity || 100)
+          setQuantity(data.product.minQuantity || 5)
         }
       } finally {
         setLoading(false)
@@ -252,7 +252,7 @@ export default function ProductDetailPage() {
               <label className="label">Quantity</label>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setQuantity(Math.max(product.minQuantity || 25, quantity - 25))}
+                  onClick={() => setQuantity(Math.max(product.minQuantity || 5, quantity - 5))}
                   className="w-10 h-10 rounded-lg border border-ink-200 flex items-center justify-center hover:bg-ink-100"
                 >
                   <ChevronDown className="w-4 h-4" />
@@ -260,14 +260,14 @@ export default function ProductDetailPage() {
                 <input
                   type="number"
                   value={quantity}
-                  min={product.minQuantity || 25}
+                  min={product.minQuantity || 5}
                   max={product.maxQuantity || 10000}
-                  step={25}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || product.minQuantity || 25)}
+                  step={5}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || product.minQuantity || 5)}
                   className="input text-center w-28"
                 />
                 <button
-                  onClick={() => setQuantity(Math.min(product.maxQuantity || 10000, quantity + 25))}
+                  onClick={() => setQuantity(Math.min(product.maxQuantity || 10000, quantity + 5))}
                   className="w-10 h-10 rounded-lg border border-ink-200 flex items-center justify-center hover:bg-ink-100"
                 >
                   <ChevronUp className="w-4 h-4" />
@@ -435,7 +435,7 @@ export default function ProductDetailPage() {
                       <span>Subtotal</span><span>{formatPrice(quote.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-ink-300">
-                      <span>Tax (8%)</span><span>{formatPrice(quote.tax)}</span>
+                      <span>Tax (12%)</span><span>{formatPrice(quote.tax)}</span>
                     </div>
                     <div className="flex justify-between text-ink-300">
                       <span>Shipping</span>

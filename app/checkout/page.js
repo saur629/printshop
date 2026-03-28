@@ -177,9 +177,9 @@ export default function CheckoutPage() {
                   <div>
                     <label className="label">Country</label>
                     <select className="input" value={form.country} onChange={e => updateForm('country', e.target.value)}>
-                      <option value="US">United States</option>
-                      <option value="CA">Canada</option>
-                      <option value="GB">United Kingdom</option>
+                      <option value="In">India</option>
+                      <option value="Ne">Neapal</option>
+                      <option value="GB"></option>
                     </select>
                   </div>
                 </div>

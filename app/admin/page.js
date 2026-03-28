@@ -28,41 +28,45 @@ const NAV = [
   { href: "/admin/customers", label: "Customers", icon: Users },
 ];
 
-export function AdminSidebar({ active = "/admin" }) {
+export function AdminSidebar({ active = '/admin' }) {
   return (
     <aside className="w-56 bg-ink-900 text-white min-h-screen shrink-0 flex flex-col">
       <div className="p-5 border-b border-ink-800">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-brand-500 rounded flex items-center justify-center text-xs font-bold">
-            P
-          </div>
+          <div className="w-7 h-7 bg-brand-500 rounded flex items-center justify-center text-xs font-bold">P</div>
           <span className="font-display font-bold">PrintCraft</span>
         </Link>
         <p className="text-xs text-ink-500 mt-1">Admin Panel</p>
       </div>
+
       <nav className="p-3 space-y-1 flex-1">
         {NAV.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${active === href ? "bg-brand-500 text-white" : "text-ink-300 hover:bg-ink-800 hover:text-white"}`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              active === href
+                ? 'bg-brand-500 text-white'
+                : 'text-ink-300 hover:bg-ink-800 hover:text-white'
+            }`}
           >
-            <Icon className="w-4 h-4" /> {label}
+            <Icon className="w-4 h-4" />
+            {label}
           </Link>
         ))}
       </nav>
+
       <div className="p-3 border-t border-ink-800">
         <Link
           href="/"
-          target="_blank"
           className="flex items-center gap-2 px-3 py-2 text-ink-400 hover:text-ink-200 text-xs rounded-lg hover:bg-ink-800 transition-colors"
         >
           ↗ View Store
         </Link>
       </div>
     </aside>
-  );
-}
+  )
+};
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
