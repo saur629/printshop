@@ -17,13 +17,8 @@ const dmSans = DM_Sans({
 
 export const metadata = {
   title: { default: 'PrintCraft — Premium Printing Services', template: '%s | PrintCraft' },
-  description: 'High-quality custom printing for business cards, flyers, banners, and more. Fast turnaround, competitive prices.',
+  description: 'High-quality custom printing for business cards, flyers, banners, and more.',
   keywords: ['printing', 'business cards', 'banners', 'flyers', 'custom printing'],
-}
-
-export const metadata = {
-  title: { default: 'PrintCraft — Premium Printing Services', template: '%s | PrintCraft' },
-  description: 'High-quality custom printing services',
   manifest: '/manifest.json',
   themeColor: '#f97316',
   appleWebApp: {
